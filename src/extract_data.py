@@ -8,15 +8,16 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
-def fetch_data(symbol="BTCUSDT", interval="1d", limit=365):
-    url = "https://api.binance.com/api/v3/klines"
+def fetch_data(symbol="bitcoin", interval="daily", limit=100):
+    # CoinGecko API
+    url = f"https://api.coingecko.com/api/v3/coins/{symbol}/market_chart"
     params = {
-        "symbol" : symbol,
+        "vs_currency" : "usd",
         "interval" : interval,
-        "limit" : limit
+        "days" : limit
     }
 
-    logging.info(f"Starting Binance API request... Target: {symbol}, Interval: {interval}")
+    logging.info(f"Starting CoinGecko API request... Target: {symbol}, Interval: {interval}, Days: {limit}")
 
     try:
         response = requests.get(url, params=params, timeout=10)
@@ -25,8 +26,10 @@ def fetch_data(symbol="BTCUSDT", interval="1d", limit=365):
         response.raise_for_status() 
         
         data = response.json()
-        logging.info(f"Successfully fetched {len(data)} records!")
-        return data
+        prices = data.get("prices", [])
+        
+        logging.info(f"Successfully fetched {len(prices)} records!")
+        return prices
         
     except requests.exceptions.RequestException as e:
         logging.error(f"Failed to fetch data due to network error or API limits: {e}")
@@ -52,5 +55,5 @@ def save_to_local(data, filepath="data/raw_btc_data.json"):
 
 
 if __name__ == "__main__":
-    binance_data = fetch_data(symbol="BTCUSDT", interval="1d", limit=100)
-    save_to_local(binance_data)
+    cryptocurrency = fetch_data(symbol="bitcoin", interval="daily", limit=100)
+    save_to_local(cryptocurrency)
