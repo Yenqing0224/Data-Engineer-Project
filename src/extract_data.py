@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Init logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
@@ -28,7 +29,7 @@ def fetch_data(symbol="bitcoin", interval="daily", limit=100):
     try:
         response = requests.get(url, params=params, timeout=10)
         
-        # Raise an exception for bad HTTP status codes (e.g., 404, 500)
+        # Raise exception
         response.raise_for_status() 
         
         data = response.json()
@@ -36,7 +37,8 @@ def fetch_data(symbol="bitcoin", interval="daily", limit=100):
         
         logging.info(f"Successfully fetched {len(prices)} records!")
         return prices
-        
+
+    # Error handling    
     except requests.exceptions.RequestException as e:
         logging.error(f"Failed to fetch data due to network error or API limits: {e}")
         return None
