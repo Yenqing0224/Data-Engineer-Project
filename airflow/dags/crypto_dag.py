@@ -1,29 +1,43 @@
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
 import sys
 import os
+import pendulum
+
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from src.extract_data import fetch_data
-from src.load_data import upload_to_s3
+from src.load_data import upload_to_s3, upload_to_snowflake
+
+# Local TimeZone
+local_tz = pendulum.timezone("Asia/Singapore")
 
 
 default_args = {
     'owner': 'yqqq',
     'depends_on_past': False,
-    'start_date': datetime(2026, 6, 1),
+    'start_date': pendulum.datetime(2026, 6, 1, tz=local_tz),
     'retries': 2,                       
     'retry_delay': timedelta(minutes=5),
 }
 
 
-def upload_wrapper(**kwargs):
+def extract_load_to_s3_wrapper():
+    raw_prices = fetch_data(symbol="bitcoin", limit=200)
+
+    s3_key = upload_to_s3(raw_prices, symbol="bitcoin")
+
+    return s3_key
+
+
+def load_to_snowflake_wrapper(**kwargs):
     ti = kwargs['ti']
+    # Pull s3 key
+    s3_key = ti.xcom_pull(task_ids='extract_and_upload_to_s3')
     
-    data = ti.xcom_pull(task_ids='fetch_from_CoinGecko')
-    
-    upload_to_s3(data=data)
+    upload_to_snowflake(s3_key, symbol="bitcoin")
 
 
 # DAG pipeline
@@ -31,18 +45,23 @@ with DAG(
     dag_id='cryptocurrency_pipeline', 
     default_args=default_args,
     description='Fetch Data from CoinGecko and Load to AWS S3',
-    schedule='0 2 * * *',     
+    schedule='53 18 * * *',     
     catchup=False,
 ) as dag:
     
-    task_extract_data = PythonOperator(
-        task_id='fetch_from_CoinGecko',
-        python_callable=fetch_data,
+    task_extract_and_load_s3 = PythonOperator(
+        task_id='extract_and_upload_to_s3',
+        python_callable=extract_load_to_s3_wrapper,
     )
 
-    task_load_data = PythonOperator(
-        task_id='upload_data_to_S3',
-        python_callable=upload_wrapper,
+    task_load_snowflake = PythonOperator(
+        task_id='load_s3_to_snowflake',
+        python_callable=load_to_snowflake_wrapper,
     )
 
-    task_extract_data >> task_load_data
+    task_dbt_transform = BashOperator(
+        task_id='dbt_run_transformations',
+        bash_command='cd /opt/airflow/dbt_transform && dbt clean && dbt run --profiles-dir .'
+    )
+
+    task_extract_and_load_s3 >> task_load_snowflake >> task_dbt_transform
