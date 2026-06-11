@@ -2,6 +2,7 @@ data/
 __pycache__/
 venv/
 .env
+logs/
 airflow/logs/
 airflow/config/
 airflow/plugins/
