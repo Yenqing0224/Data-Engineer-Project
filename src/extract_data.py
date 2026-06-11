@@ -2,8 +2,6 @@ import requests
 import json
 import logging
 import os
-from datetime import datetime
-import boto3
 from dotenv import load_dotenv
 
 
@@ -44,35 +42,7 @@ def fetch_data(symbol="bitcoin", interval="daily", limit=100):
         return None
     
 
-def upload_to_s3(data, symbol="bitcoin"):
-    if not data:
-        logging.warning("No data available to upload.")
-        return
-
-    bucket_name = os.getenv('AWS_S3_BUCKET_NAME')
-
-    s3_client = boto3.client(
-        's3',
-        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
-    )
-
-    current_date = datetime.now().strftime('%Y-%m-%d')
-    s3_key = f"raw_data/{symbol}/{current_date}.json"
-
-    try:
-        logging.info(f"Uploading data to s3://{bucket_name}/{s3_key} ...")
-        # Convert dictionary to JSON string, then upload
-        s3_client.put_object(
-            Bucket=bucket_name,
-            Key=s3_key,
-            Body=json.dumps(data)
-        )
-        logging.info("Upload to AWS S3 completely successful!")
-    except Exception as e:
-        logging.error(f"S3 Upload failed: {e}")
-
-
+# Function to test
 def save_to_local(data, filepath="data/raw_btc_data.json"):
     """
     Safely save the extracted JSON data to a local file.
@@ -93,4 +63,4 @@ def save_to_local(data, filepath="data/raw_btc_data.json"):
 
 if __name__ == "__main__":
     cryptocurrency = fetch_data(symbol="bitcoin", interval="daily", limit=100)
-    upload_to_s3(cryptocurrency, symbol="bitcoin")
+    save_to_local(cryptocurrency, symbol="bitcoin")

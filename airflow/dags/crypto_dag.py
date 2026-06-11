@@ -5,7 +5,9 @@ import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-from src.extract_data import fetch_data, upload_to_s3
+from src.extract_data import fetch_data
+from src.load_data import upload_to_s3
+
 
 default_args = {
     'owner': 'yqqq',
