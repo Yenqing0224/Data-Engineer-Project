@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: coingecko_raw          # Name
+    database: CRYPTO_DB          # Database
+    schema: RAW                  # Specific Schema
+    tables:
+      - name: bitcoin_raw        
