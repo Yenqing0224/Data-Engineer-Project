@@ -1,12 +1,24 @@
-data/
+# Python and Environment
 __pycache__/
 venv/
 .env
+
+# Local Data and Logs
+data/
 logs/
+
+# Apache Airflow
 airflow/logs/
 airflow/config/
 airflow/plugins/
+
+# dbt
 dbt_transform/target/
 dbt_transform/dbt_packages/
 dbt_transform/logs/
 dbt_transform/profiles.yml
+
+# Terraform
+terraform/.terraform/
+terraform/terraform.tfvars
+terraform/terraform.tfstate*
