@@ -60,9 +60,9 @@ def upload_to_snowflake(s3_key, symbol="bitcoin"):
         user=os.getenv('SNOWFLAKE_USER'),
         password=os.getenv('SNOWFLAKE_PASSWORD'),
         account=os.getenv('SNOWFLAKE_ACCOUNT'),
-        warehouse='CRYPTO_WH',      # 指定让哪台发动机来算
-        database='CRYPTO_DB',      # 指定去哪个大展厅
-        schema='RAW'               # 指定进哪个接货房
+        warehouse='CRYPTO_WH',  
+        database='CRYPTO_DB',    
+        schema='RAW'              
     )
     
     
