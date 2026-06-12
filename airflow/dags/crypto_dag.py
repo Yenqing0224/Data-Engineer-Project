@@ -45,7 +45,7 @@ with DAG(
     dag_id='cryptocurrency_pipeline', 
     default_args=default_args,
     description='Fetch Data from CoinGecko and Load to AWS S3',
-    schedule='53 18 * * *',     
+    schedule='0 2 * * *',     
     catchup=False,
 ) as dag:
     

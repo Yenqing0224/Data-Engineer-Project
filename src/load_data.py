@@ -65,7 +65,14 @@ def upload_to_snowflake(s3_key, symbol="bitcoin"):
         schema='RAW'               # 指定进哪个接货房
     )
     
+    
     cursor = conn.cursor()
+
+    create_table_sql = f"""
+        CREATE TABLE IF NOT EXISTS CRYPTO_DB.RAW.BITCOIN_RAW (
+            RAW_DATA VARIANT
+        );
+    """
 
     copy_sql = f"""
         COPY INTO CRYPTO_DB.RAW.BITCOIN_RAW
@@ -81,6 +88,8 @@ def upload_to_snowflake(s3_key, symbol="bitcoin"):
     """
     
     try:
+        logging.info("Ensuring target table exists...")
+        cursor.execute(create_table_sql)
         logging.info(f"Executing Snowflake COPY INTO from s3://{bucket_name}/{s3_key} ...")
         cursor.execute(copy_sql)
         
