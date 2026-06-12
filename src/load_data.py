@@ -83,7 +83,7 @@ def upload_to_snowflake(s3_key, symbol="bitcoin"):
         )
         FILE_FORMAT = (
             TYPE = 'JSON'
-            STRIP_OUTER_ARRAY = TRUE  -- 依然保留拆分数组的绝杀技
+            STRIP_OUTER_ARRAY = TRUE 
         );
     """
     
