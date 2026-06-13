@@ -1,0 +1,25 @@
+version: 2
+
+# Define raw data sources ingested from S3 into Snowflake
+sources:
+  - name: coingecko_raw
+    database: CRYPTO_DB
+    schema: RAW
+    tables:
+      - name: bitcoin_raw
+        description: "Raw cryptocurrency market data ingested as variant arrays from CoinGecko API."
+
+# Define data quality tests and documentation for the staging layer
+models:
+  - name: stage_bitcoin
+    description: "Staging model that parses raw JSON arrays, normalizes timestamps, and extracts prices."
+    columns:
+      - name: price_timestamp
+        description: "Normalized non-timezone timestamp for the price record."
+        tests:
+          - not_null
+
+      - name: price_usd
+        description: "Bitcoin price denominated in USD."
+        tests:
+          - not_null
