@@ -21,7 +21,7 @@ terraform {
 
 # AWS
 provider "aws" {
-  region = var.aws_region
+  region = "ap-southeast-1"
 }
 
 # Snowflake
