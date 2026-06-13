@@ -22,14 +22,9 @@ terraform {
 # AWS
 provider "aws" {
   region = var.aws_region
-  access_key = var.aws_access_key
-  secret_key = var.aws_secret_key
 }
 
 # Snowflake
 provider "snowflake" {
-  account  = var.snowflake_account
-  user     = var.snowflake_user
-  password = var.snowflake_password
   role     = "ACCOUNTADMIN"
 }

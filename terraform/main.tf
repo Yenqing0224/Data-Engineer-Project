@@ -9,6 +9,14 @@ resource "aws_s3_bucket" "crypto_bucket" {
   }
 }
 
+resource "aws_s3_bucket" "crypto_bucket" {
+  bucket        = "yqqq-crypto-data-lake-test"
+  force_destroy = true
+  tags = {
+    Name        = "Crypto Data Lake"
+    Environment = "Dev"
+  }
+}
 
 # Snowflake
 # Create DB
