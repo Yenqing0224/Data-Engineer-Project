@@ -1,0 +1,4 @@
+# Dashboard
+streamlit
+snowflake-connector-python
+pandas
