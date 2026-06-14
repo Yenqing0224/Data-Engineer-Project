@@ -22,3 +22,6 @@ dbt_transform/profiles.yml
 terraform/.terraform/
 terraform/terraform.tfvars
 terraform/terraform.tfstate*
+
+# Streamlit
+dashboard/.streamlit/secrets.toml
