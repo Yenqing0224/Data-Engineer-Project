@@ -31,8 +31,13 @@ jobs:
         with:
           terraform_version: "1.7.0"
 
+      - name: Clean Terraform Cache
+        run: |
+          rm -rf ~/.terraform.d
+          rm -rf .terraform
+
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -reconfigure -upgrade
         working-directory: ./terraform
 
       - name: Terraform Plan
