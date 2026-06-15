@@ -35,6 +35,7 @@ jobs:
         run: |
           rm -rf ~/.terraform.d
           rm -rf .terraform
+        working-directory: ./terraform
 
       - name: Terraform Init
         run: terraform init -reconfigure -upgrade
