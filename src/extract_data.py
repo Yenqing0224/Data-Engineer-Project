@@ -30,11 +30,9 @@ def fetch_data(symbol="bitcoin", interval="daily", limit=100):
         # Raise exception
         response.raise_for_status() 
         
-        data = response.json()
-        prices = data.get("prices", [])
-        
-        logging.info(f"Successfully fetched {len(prices)} records!")
-        return prices
+        data = response.json()        
+        logging.info(f"Successfully fetched market data for {symbol}")
+        return data
 
     # Error handling    
     except requests.exceptions.RequestException as e:
@@ -62,5 +60,13 @@ def save_to_local(data, filepath="data/raw_btc_data.json"):
 
 
 if __name__ == "__main__":
-    cryptocurrency = fetch_data(symbol="bitcoin", interval="daily", limit=100)
-    save_to_local(cryptocurrency, symbol="bitcoin")
+    try:
+        symbols = ["bitcoin", "ethereum", "solana"]
+        for symbol in symbols:
+            logging.info(f"Starting for {symbol.upper()}")
+            cryptocurrency = fetch_data(symbol=symbol, interval="daily", limit=100)
+            if cryptocurrency:
+                target_path = f"data/raw_{symbol}_data.json"
+                save_to_local(cryptocurrency, filepath=target_path)
+    except Exception as e:
+        logging.error(f"Something went wrong! {e}")

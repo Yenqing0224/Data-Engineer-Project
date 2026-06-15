@@ -17,7 +17,7 @@ logging.basicConfig(
 )
 
 
-def upload_to_s3(data, symbol="bitcoin"):
+def upload_to_s3(data, symbol):
     if not data:
         logging.warning("No data available to upload.")
         return
@@ -47,7 +47,7 @@ def upload_to_s3(data, symbol="bitcoin"):
         logging.error(f"S3 Upload failed: {e}")
 
 
-def upload_to_snowflake(s3_key, symbol="bitcoin"):
+def upload_to_snowflake(s3_key, symbol):
     if not s3_key:
         logging.error("No S3 key provided. Skipping Snowflake load.")
         return
@@ -69,31 +69,43 @@ def upload_to_snowflake(s3_key, symbol="bitcoin"):
     cursor = conn.cursor()
 
     create_table_sql = f"""
-        CREATE TABLE IF NOT EXISTS CRYPTO_DB.RAW.BITCOIN_RAW (
-            RAW_DATA VARIANT
+        CREATE TABLE IF NOT EXISTS CRYPTO_DB.RAW.COINGECKO_MARKET_DATA (
+            RAW_DATA VARIANT,
+            FILE_NAME VARCHAR,
+            INGESTION_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+        );
+    """
+
+    create_stage_sql = f"""
+        CREATE STAGE IF NOT EXISTS CRYPTO_DB.RAW.COINGECKO_S3_STAGE
+        URL = 's3://{bucket_name}'
+        CREDENTIALS = (
+            AWS_KEY_ID = '{os.getenv('AWS_ACCESS_KEY_ID')}' 
+            AWS_SECRET_KEY = '{os.getenv('AWS_SECRET_ACCESS_KEY')}'
         );
     """
 
     copy_sql = f"""
-        COPY INTO CRYPTO_DB.RAW.BITCOIN_RAW
-        FROM 's3://{bucket_name}/{s3_key}'
-        CREDENTIALS = (
-            AWS_KEY_ID = '{os.getenv('AWS_ACCESS_KEY_ID')}' 
-            AWS_SECRET_KEY = '{os.getenv('AWS_SECRET_ACCESS_KEY')}'
+        COPY INTO CRYPTO_DB.RAW.COINGECKO_MARKET_DATA (RAW_DATA, FILE_NAME)
+        FROM (
+            SELECT $1, METADATA$FILENAME
+            FROM @CRYPTO_DB.RAW.COINGECKO_S3_STAGE/{s3_key}
         )
         FILE_FORMAT = (
             TYPE = 'JSON'
-            STRIP_OUTER_ARRAY = TRUE 
+            STRIP_OUTER_ARRAY = TRUE
         );
     """
     
     try:
         logging.info("Ensuring target table exists...")
         cursor.execute(create_table_sql)
+        logging.info("Ensuring external S3 stage object exists in Snowflake...")
+        cursor.execute(create_stage_sql)
         logging.info(f"Executing Snowflake COPY INTO from s3://{bucket_name}/{s3_key} ...")
         cursor.execute(copy_sql)
         
-        # 抓取执行结果
+        # fetch results
         results = cursor.fetchall()
         for row in results:
             logging.info(f"Snowflake Ingestion Result: Status={row[1]}, Rows Parsed={row[3]}, Rows Loaded={row[4]}")

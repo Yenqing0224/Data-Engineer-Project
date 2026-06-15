@@ -2,16 +2,20 @@ version: 2
 
 # Define data quality tests and documentation for the business aggregation layer
 models:
-  - name: mart_bitcoin_trends
+  - name: fact_crypto_price
     description: "Marts layer model providing deduplicated daily snapshots and 7-day rolling moving average price trends."
     columns:
-      - name: price_timestamp
+      - name: coin_id
+        description: "The unique identifier for the cryptocurrency (e.g., bitcoin, ethereum)."
+        tests:
+          - not_null
+
+      - name: date_time
         description: "Unique daily midnight timestamp acting as the logical primary key."
         tests:
           - not_null
-          - unique 
 
-      - name: price_usd
+      - name: price
         description: "Final deduplicated daily midnight Bitcoin price in USD."
         tests:
           - not_null

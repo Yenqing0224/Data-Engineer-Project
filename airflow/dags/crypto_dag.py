@@ -25,19 +25,24 @@ default_args = {
 
 
 def extract_load_to_s3_wrapper():
-    raw_prices = fetch_data(symbol="bitcoin", limit=200)
+    symbols = ["bitcoin", "ethereum", "solana"]
+    s3_key_dict = {}
+    for symbol in symbols:
+        raw_prices = fetch_data(symbol=symbol, limit=200)
+        s3_key = upload_to_s3(raw_prices, symbol=symbol)
+        if s3_key:
+            s3_key_dict[symbol] = s3_key
 
-    s3_key = upload_to_s3(raw_prices, symbol="bitcoin")
-
-    return s3_key
+    return s3_key_dict
 
 
 def load_to_snowflake_wrapper(**kwargs):
     ti = kwargs['ti']
     # Pull s3 key
-    s3_key = ti.xcom_pull(task_ids='extract_and_upload_to_s3')
+    s3_key_dict = ti.xcom_pull(task_ids='extract_and_upload_to_s3')
     
-    upload_to_snowflake(s3_key, symbol="bitcoin")
+    for symbol, s3_key in s3_key_dict.items():
+        upload_to_snowflake(s3_key, symbol=symbol)
 
 
 # DAG pipeline
@@ -61,7 +66,7 @@ with DAG(
 
     task_dbt_transform = BashOperator(
         task_id='dbt_run_transformations',
-        bash_command='cd /opt/airflow/dbt_transform && dbt clean && dbt run --profiles-dir .'
+        bash_command='cd /opt/airflow/dbt_transform && dbt clean && dbt run --profiles-dir . && dbt test --profiles-dir .'
     )
 
     task_extract_and_load_s3 >> task_load_snowflake >> task_dbt_transform
