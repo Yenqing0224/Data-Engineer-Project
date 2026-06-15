@@ -67,6 +67,8 @@ def upload_to_snowflake(s3_key, symbol):
     
     
     cursor = conn.cursor()
+    logging.info("Aligning Snowflake session timezone with Airflow (Asia/Singapore)...")
+    cursor.execute("ALTER SESSION SET TIMEZONE = 'Asia/Singapore';")
 
     create_table_sql = f"""
         CREATE TABLE IF NOT EXISTS CRYPTO_DB.RAW.COINGECKO_MARKET_DATA (

@@ -6,6 +6,7 @@ with raw_source as (
 
 flattened_prices as (
     select
+        FILE_NAME,
         -- Cut out coin_id from S3 file path
         split_part(FILE_NAME, '/', 2) as coin_id,
         f.value[0]::number as raw_time_stamp,
@@ -17,6 +18,7 @@ flattened_prices as (
 
 flattened_caps as (
     select
+        FILE_NAME,
         split_part(FILE_NAME, '/', 2) as coin_id,
         f.value[0]::number as raw_time_stamp,
         f.value[1]::float as market_cap
@@ -26,6 +28,7 @@ flattened_caps as (
 
 flattened_volumes as (
     select
+        FILE_NAME,
         split_part(FILE_NAME, '/', 2) as coin_id,
         f.value[0]::number as raw_time_stamp,
         f.value[1]::float as total_volume
@@ -42,6 +45,10 @@ select
     p.cleaned_at
 from flattened_prices p
 join flattened_caps c 
-    on p.coin_id = c.coin_id and p.raw_time_stamp = c.raw_time_stamp
+    on p.coin_id = c.coin_id 
+    and p.raw_time_stamp = c.raw_time_stamp 
+    and p.FILE_NAME = c.FILE_NAME
 join flattened_volumes v 
-    on p.coin_id = v.coin_id and p.raw_time_stamp = v.raw_time_stamp
+    on p.coin_id = v.coin_id 
+    and p.raw_time_stamp = v.raw_time_stamp
+    and p.FILE_NAME = v.FILE_NAME
