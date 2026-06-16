@@ -13,7 +13,10 @@ with raw_source as (
     from {{ source('coingecko', 'coingecko_market_data') }}
     
     {% if is_incremental() %}
-    where INGESTION_TIMESTAMP > (select max(ingestion_timestamp) from {{ this }})
+    where INGESTION_TIMESTAMP > (
+        select coalesce(max(ingestion_timestamp), '1970-01-01'::timestamp_ntz) 
+        from {{ this }}
+    )
     {% endif %}
 ),
 

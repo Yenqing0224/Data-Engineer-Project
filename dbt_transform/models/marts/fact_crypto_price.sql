@@ -12,7 +12,7 @@ with daily_snapshots as (
     from {{ ref('stg_crypto_price') }}
     qualify row_number() over (
         partition by coin_id, date_trunc('day', date_time)
-        order by ingestion_timestamp desc
+        order by date_time ASC, ingestion_timestamp DESC
     ) = 1
 )
 
