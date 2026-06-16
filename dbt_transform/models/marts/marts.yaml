@@ -4,6 +4,14 @@ version: 2
 models:
   - name: fact_crypto_price
     description: "Marts layer model providing deduplicated daily snapshots and 7-day rolling moving average price trends."
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - coin_id
+              - date_time
+            
     columns:
       - name: coin_id
         description: "The unique identifier for the cryptocurrency (e.g., bitcoin, ethereum)."
