@@ -78,7 +78,7 @@ with DAG(
 
     task_dbt_transform = BashOperator(
         task_id='dbt_run_transformations',
-        bash_command='cd /opt/airflow/dbt_transform && dbt clean && dbt run --profiles-dir . && dbt test --profiles-dir .'
+        bash_command='cd /opt/airflow/dbt_transform && dbt clean && dbt deps && dbt run --profiles-dir . && dbt test --profiles-dir .'
     )
 
     task_extract_and_load_s3 >> task_load_snowflake >> task_dbt_transform
